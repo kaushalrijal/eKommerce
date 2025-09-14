@@ -5,7 +5,7 @@ CREATE TABLE "public"."Product" (
     "slug" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "images" TEXT[],
-    "brand" TEXT[],
+    "brand" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "stock" INTEGER NOT NULL,
     "price" DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -19,4 +19,4 @@ CREATE TABLE "public"."Product" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "product_slug_indx" ON "public"."Product"("slug");
+CREATE UNIQUE INDEX "product_slug_idx" ON "public"."Product"("slug");
