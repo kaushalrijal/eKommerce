@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/lib/generated/prisma";
+import { PrismaClient } from "../lib/generated/prisma";
 
 // For now, use the standard PrismaClient without adapter
 // TODO: Fix PrismaNeon adapter configuration
