@@ -1,0 +1,12 @@
+# Ignore development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore build artifacts that will be regenerated
+.next/
+node_modules/
+
+# Keep the generated Prisma client
+!lib/generated/
