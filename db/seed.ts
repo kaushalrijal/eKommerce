@@ -7,7 +7,11 @@ async function main() {
     try {
         // Clear existing data
         await prisma.product.deleteMany();
-        console.log("Cleared existing products");
+        await prisma.account.deleteMany();
+        await prisma.session.deleteMany();
+        await prisma.verificationToken.deleteMany();
+        await prisma.user.deleteMany();
+
         
         // Create products one by one to avoid array issues
         for (const product of sampleData.products) {
@@ -29,6 +33,8 @@ async function main() {
             });
             console.log(`Created product: ${product.name}`);
         }
+
+        await prisma.user.createMany({ data: sampleData.users })
 
         console.log("Database seeded successfully");
     } catch (error) {
