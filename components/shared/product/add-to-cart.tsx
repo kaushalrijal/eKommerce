@@ -29,7 +29,7 @@ const AddToCart = ({ item }: { item: CartItem }) => {
         })
     }
   return (
-    <Button className="w-full" type="button" onClick={handleAddToCart}>Add to Cart</Button>
+    <Button className="w-full" type="button" onClick={handleAddToCart}><Plus />Add to Cart</Button>
   )
 }
 
