@@ -15,7 +15,12 @@ export async function signInWithCredentials(prevState: unknown, formData: FormDa
             password: formData.get("password")
         })
 
-        await signIn('credentials', user);
+        const callbackUrl = (formData.get("callbackUrl") as string) || "/";
+        
+        await signIn('credentials', {
+            ...user,
+            redirectTo: callbackUrl
+        });
 
         return { success: true, message: 'Signed in successfully' }
     } catch (error) {
@@ -44,6 +49,8 @@ export async function signUpUser(prevState: unknown, formData: FormData){
 
         const plainPassword = user.password
 
+        const callbackUrl = (formData.get("callbackUrl") as string) || "/";
+
         user.password = hashSync(user.password, 10);
 
         await prisma.user.create({
@@ -57,6 +64,7 @@ export async function signUpUser(prevState: unknown, formData: FormData){
         await signIn("credentials", {
             email: user.email,
             password: plainPassword,
+            redirectTo: callbackUrl
         });
 
         return {
