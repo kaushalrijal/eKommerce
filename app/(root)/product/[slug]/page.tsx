@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getProductBySlug } from "@/lib/actions/product.actions";
 import { notFound } from "next/navigation";
 import ProductPrice from "@/components/shared/product/product-price";
-import { FileX } from "lucide-react";
+import ProductImages from "@/components/product/product-images";
+import AddToCart from "@/components/shared/product/add-to-cart";
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -20,7 +20,9 @@ const ProductDetailsPage = async (props: {
       <section>
         <div className="grid grid-cols-1 md:grid-cols-5">
           {/* Images column */}
-          <div className="col-span-2">{/* image component goes here */}</div>
+          <div className="col-span-2">
+            <ProductImages images={product.images} />
+          </div>
           {/* Details Column */}
           <div className="col-span-2 p-5">
             <div className="flex flex-col gap-6">
@@ -62,8 +64,15 @@ const ProductDetailsPage = async (props: {
                   )}
                 </div>
                 {product.stock > 0 && ( 
-                    <div className="flex-cente">
-                        <Button className="w-full">Add to Cart</Button>
+                    <div className="flex-center">
+                        <AddToCart item={{
+                          productId: product.id,
+                          name: product.name,
+                          slug: product.slug,
+                          price: product.price,
+                          qty: 1,
+                          image: product.images![0]
+                        }}/>
                     </div>
                 )}
               </CardContent>
