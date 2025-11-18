@@ -70,7 +70,7 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
       {isPending ? (
         <Loader className="w-4 h-4 animate-spin" />
       ) : (
-        <Plus8 className="h-4 w-4" />
+        <Plus className="h-4 w-4" />
       )}
       Add to Cart
     </Button>
