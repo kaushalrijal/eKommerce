@@ -8,6 +8,7 @@ import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
 import { ArrowRight, Loader, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 
 const CartTable = ({ cart }: { cart?: Cart }) => {
     const router = useRouter();
@@ -22,7 +23,15 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
         ) : (
             <div className="grid md:grid-cols-4 md:gap-5">
                 <div className="overflow-x-auto md:col-span-3">
-                    Table
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead className="text-center">Quantity</TableHead>
+                                <TableHead className="text-right">Price</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                    </Table>
                 </div>
             </div>
         ) }
