@@ -24,7 +24,7 @@ const ShippingAddressPage = async () => {
 
 
   return (
-    <div>Address</div>
+    <div><ShippingAddressPage address={ user.address as ShippingAddress }/></div>
   )
 }
 
