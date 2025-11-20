@@ -6,7 +6,7 @@ import { useTransition } from "react";
 import { ShippingAddress } from "@/types";
 import { shippingAddressSchema } from "@/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ControllerRenderProps, useForm } from "react-hook-form";
+import { ControllerRenderProps, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { shippingAddressDefaultValues } from "@/lib/constants";
 import {
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader } from "lucide-react";
+import { updateUserAddress } from "@/lib/actions/user.actions";
 
 const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
   const router = useRouter();
@@ -31,11 +32,20 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
 
   const [isPending, startTransition] = useTransition();
 
-  const submitForm = (values) => {
-    console.log("Meow")
-    console.log(values);
-    return;
-  }
+  const submitForm: SubmitHandler<
+    z.infer<typeof shippingAddressSchema>
+  > = async (values) => {
+    startTransition( async () => {
+      const res = await updateUserAddress(values);
+
+      if(!res.success) {
+        toast.error(res.message);
+        return;
+      }
+
+      router.push('/payment-method');
+    })
+  };
 
   return (
     <>
@@ -161,13 +171,14 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
               />
             </div>
             <div className="flex gap-2">
-                <Button type="submit" disabled={isPending}>
-                    { isPending ? (
-                        <Loader className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <ArrowRight className="w-4 h-4" />
-                    ) } Continue
-                </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
+                  <Loader className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}{" "}
+                Continue
+              </Button>
             </div>
           </form>
         </Form>

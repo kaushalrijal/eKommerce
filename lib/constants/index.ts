@@ -16,9 +16,9 @@ export const signUpDefaultValues = {
 }
 
 export const shippingAddressDefaultValues = {
-    fullName: "John Doe",
-    streetAddress: '123 Ghar',
-    city: "taltira",
-    potalCode: '69420',
-    country: "ekadesh"
+    fullName: "",
+    streetAddress: '',
+    city: "",
+    potalCode: '',
+    country: ""
 }
