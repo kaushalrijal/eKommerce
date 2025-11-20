@@ -142,7 +142,8 @@ export async function updateUserPaymentMethod(data: z.infer<typeof paymentMethod
         return {
             success: true,
             message: "User updated successfully!"
-        }
+        };
+        
     } catch (error) {
         return {
             success: false,
