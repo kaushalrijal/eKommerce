@@ -7,8 +7,7 @@ import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma"
 import { formatError } from "../utils";
 import { ShippingAddress } from "@/types";
-import z, { success } from "zod";
-import { format } from "path";
+import z from "zod";
 
 // sign in the user with credentials
 export async function signInWithCredentials(prevState: unknown, formData: FormData) {

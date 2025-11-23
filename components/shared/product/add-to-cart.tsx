@@ -7,7 +7,7 @@ import { Plus, Minus, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
 import { useTransition } from "react";
-import { start } from "repl";
+
 
 const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
   const router = useRouter();
@@ -38,7 +38,11 @@ const AddToCart = ({ cart, item }: { cart?: Cart; item: CartItem }) => {
     startTransition(async () => {
       const res = await removeItemFromCart(item.productId);
 
-      res.success ? toast.success(res.message) : toast.error(res.message);
+      if(!res.success){
+        toast.error(res.message)
+      } else {
+        toast.success(res.message)
+      }
 
       return;
     });

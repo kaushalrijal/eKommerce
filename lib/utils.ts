@@ -73,7 +73,7 @@ export function formatCurrency(amount: number | string | null){
 // format number
 const NUMBER_FORMATTER = new Intl.NumberFormat('en-US');
 
-export function formatNumber(number: Number){
+export function formatNumber(number: number){
   return NUMBER_FORMATTER.format(Number(number));
 }
 
