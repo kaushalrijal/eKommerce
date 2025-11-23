@@ -3,9 +3,8 @@ import {PrismaAdapter} from "@auth/prisma-adapter"
 import {prisma} from "@/db/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { compareSync } from 'bcrypt-ts-edge';
-import type { NextAuthConfig } from 'next-auth';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { authConfig } from './auth.config';
 
 export const config = {
     pages: {
@@ -13,7 +12,7 @@ export const config = {
         error: '/sign-in',
     },
     session: {
-        strategy: "jwt",
+        strategy: "jwt" as const,
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     adapter: PrismaAdapter(prisma),
@@ -54,6 +53,7 @@ export const config = {
         })
     ],
     callbacks: {
+        ...authConfig.callbacks,
         async session({ session, user, trigger, token }: any) {
             // set the user id from the token
             session.user.id = token.sub;
@@ -120,47 +120,8 @@ export const config = {
             }
             return token;
         },
-        authorized({ request, auth}: any){
-            // array of reguex patterns of paths we want to protect
-            const protectedPaths = [
-                /\/shipping-address/,
-                /\/payment-method/,
-                /\/place-order/,
-                /\/profile/,
-                /\/user\/(.*)/,
-                /\/order\/(.*)/,
-                /\/admin/,
-            ];
-
-            // get pathname from the request URL object
-            const { pathname } = request.nextUrl;
-
-            // check if user is not authenticated and accessing a protected path
-            if(!auth && protectedPaths.some((p)=>p.test(pathname))) return false;
-
-            // check fo session cart cookie
-            if(!request.cookies.get('sessionCartId')){
-                // Generate new session cart id cookie
-                const sessionCartId = crypto.randomUUID();
-
-                // clone the request headers
-                const newRequestHeaders = new Headers(request.headers);
-
-                // create new response and add the new headers
-                const response = NextResponse.next({
-                    request: {
-                        headers: newRequestHeaders
-                    }
-                });
-
-                // set newly generated sessoinCartId in the response cookies
-                response.cookies.set("sessionCartId", sessionCartId)
-                return response;
-            } else {
-                return true;
-            }
-        }
+        
     },
-} satisfies NextAuthConfig;
+} 
 
 export const {handlers, auth, signIn, signOut} = NextAuth(config);
