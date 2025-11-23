@@ -11,7 +11,6 @@ import { CartItem, PaymentResult } from "@/types";
 import { paypal } from "../paypal";
 import { revalidatePath } from "next/cache";
 import { PAGE_SIZE } from "../constants";
-import { Prisma } from "@prisma/client/runtime";
 
 // create order and create the order items
 export async function createOrder() {
@@ -310,7 +309,7 @@ export async function getOrderSummary(){
   })
 
   // get montly sales
-  const salesDataRaw = await prisma.$queryRaw<Array<{month: string; totalSales: Prisma.Decimal}>>`SELECT to_char("createdAt", 'MM/YY') as "month", sum("totalPrice") as "totalSales" FROM "Order" GROUP BY to_char("createdAt", 'MM/YY')`
+  const salesDataRaw = await prisma.$queryRaw<Array<{month: string; totalSales: string | number}>>`SELECT to_char("createdAt", 'MM/YY') as "month", sum("totalPrice") as "totalSales" FROM "Order" GROUP BY to_char("createdAt", 'MM/YY')`
 
   const salesData:SalesDataType = salesDataRaw.map((entry)=>({
     month: entry.month,
