@@ -12,13 +12,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { PayPalButtons, PayPalScriptProvider, usePayPalScriptReducer} from "@paypal/react-paypal-js"
-import { createPaypalOrder, approvePaypalOrder } from "@/lib/actions/order.actions";
+import {
+  PayPalButtons,
+  PayPalScriptProvider,
+  usePayPalScriptReducer,
+} from "@paypal/react-paypal-js";
+import {
+  createPaypalOrder,
+  approvePaypalOrder,
+} from "@/lib/actions/order.actions";
 import { toast } from "sonner";
+import {
+  updateOrderToPaidCOD,
+  deliverOrder,
+} from "@/lib/actions/order.actions";
+import { use, useTransition } from "react";
 
-const OrderDetailsTable =  ({ order, paypalClientId }: { order: Order, paypalClientId: string }) => {
+const OrderDetailsTable = ({
+  order,
+  paypalClientId,
+  isAdmin,
+}: {
+  order: Order;
+  paypalClientId: string;
+  isAdmin: boolean;
+}) => {
   const {
     id,
     shippingAddress,
@@ -36,31 +57,64 @@ const OrderDetailsTable =  ({ order, paypalClientId }: { order: Order, paypalCli
 
   const PrintLoadingState = () => {
     const [{ isPending, isRejected }] = usePayPalScriptReducer();
-    let status = ""
+    let status = "";
 
-    if(isPending){
+    if (isPending) {
       status = "Loading PayPal...";
-    } else if (isRejected){
+    } else if (isRejected) {
       status = "Error Loading PayPal";
     }
 
     return status;
-  }
+  };
 
   const handleCreatePayPalOrder = async () => {
     const res = await createPaypalOrder(order.id);
 
-    if(!res.success){
-      toast.error(res.message)
+    if (!res.success) {
+      toast.error(res.message);
     }
 
     return res.data;
-  }
+  };
 
-  const handleApprovePayPalOrder = async (data: {orderID: string; }) => {
+  const handleApprovePayPalOrder = async (data: { orderID: string }) => {
     const res = await approvePaypalOrder(order.id, data);
 
-    res.success ? toast.success(res.message) : toast.error(res.message)
+    res.success ? toast.success(res.message) : toast.error(res.message);
+  };
+
+
+  // button to mark order as paid
+  const MarkAsPaidButton = () => {
+    const [ isPending, startTransition ] = useTransition();
+    return (
+      <Button type="button" disabled={isPending} onClick={()=>startTransition(async () => {
+        const res = await updateOrderToPaidCOD(order.id);
+        if(res.success){
+          toast.success(res.message)
+        } else {
+          toast.error(res.message)
+        }
+      })}>
+        { isPending ? "Processing..." : "Mark As Paid" }
+      </Button>
+    )
+  }
+  const MarkAsDeliveredButton = () => {
+    const [ isPending, startTransition ] = useTransition();
+    return (
+      <Button type="button" disabled={isPending} onClick={()=>startTransition(async () => {
+        const res = await deliverOrder(order.id);
+        if(res.success){
+          toast.success(res.message)
+        } else {
+          toast.error(res.message)
+        }
+      })}>
+        { isPending ? "Processing..." : "Mark As Delivered" }
+      </Button>
+    )
   }
 
   return (
@@ -144,29 +198,37 @@ const OrderDetailsTable =  ({ order, paypalClientId }: { order: Order, paypalCli
             <CardContent className="p-4 gap-4 space-y-4">
               <div className="flex justify-between">
                 <div>Items</div>
-                <div>{ formatCurrency(itemsPrice )}</div>
+                <div>{formatCurrency(itemsPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Tax</div>
-                <div>{ formatCurrency(taxPrice )}</div>
+                <div>{formatCurrency(taxPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Shipping</div>
-                <div>{ formatCurrency(shippingPrice )}</div>
+                <div>{formatCurrency(shippingPrice)}</div>
               </div>
               <div className="flex justify-between">
                 <div>Total</div>
-                <div>{ formatCurrency(totalPrice )}</div>
+                <div>{formatCurrency(totalPrice)}</div>
               </div>
               {/* Paypal payment */}
-              { !isPaid && paymentMethod === 'PayPal' && (
+              {!isPaid && paymentMethod === "PayPal" && (
                 <div>
                   <PayPalScriptProvider options={{ clientId: paypalClientId }}>
                     <PrintLoadingState />
-                    <PayPalButtons createOrder={handleCreatePayPalOrder} onApprove={handleApprovePayPalOrder}/>
+                    <PayPalButtons
+                      createOrder={handleCreatePayPalOrder}
+                      onApprove={handleApprovePayPalOrder}
+                    />
                   </PayPalScriptProvider>
                 </div>
               )}
+              {/* Cash On Delivery */}
+              {isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                <MarkAsPaidButton />
+              )}
+              {isAdmin && isPaid && !isDelivered && <MarkAsDeliveredButton />}
             </CardContent>
           </Card>
         </div>
