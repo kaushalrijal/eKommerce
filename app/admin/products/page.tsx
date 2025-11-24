@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getAllProducts } from "@/lib/actions/product.actions";
+import { getAllProducts, deleteProduct, getProductBySlug } from "@/lib/actions/product.actions";
 import { formatCurrency, formatId } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Pagination from "@/components/shared/pagination";
+import DeleteDialog from "@/components/shared/delete-dialog";
 
 const AdminProductsPage = async (props: {
     searchParams: Promise<{
@@ -21,7 +22,6 @@ const AdminProductsPage = async (props: {
 
     const products = await getAllProducts({
         query: searchText,
-        limit: 2,
         page,
         category
     })
@@ -59,7 +59,7 @@ const AdminProductsPage = async (props: {
                             <Button asChild variant={"outline"} size={"sm"}>
                                 <Link href={`/admin/products/${product.id}`}>Edit</Link>
                             </Button>
-                            {/* DELETE */}
+                            <DeleteDialog id={product.id} action={deleteProduct} />
                         </TableCell>
 
                     </TableRow>
