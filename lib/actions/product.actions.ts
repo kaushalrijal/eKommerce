@@ -3,7 +3,7 @@ import {prisma} from "@/db/prisma";
 import { convertToPlainObject, formatError } from "../utils";
 import { LATEST_PRODUCTS_LIMIT, PAGE_SIZE } from "../constants";
 import { revalidatePath } from "next/cache";
-import z, { success } from "zod";
+import z from "zod";
 import { insertProductSchema, updateProductSchema } from "../validators";
 
 // Get latest products
@@ -37,6 +37,7 @@ export async function getAllProducts({
     category?: string;
 }) {
     const data = await prisma.product.findMany({
+        orderBy: {createdAt: "desc"},
         skip: (page - 1) * limit,
         take: limit
     })

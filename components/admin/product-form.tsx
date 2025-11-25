@@ -42,7 +42,7 @@ const ProductForm = ({
       product && type === 'Update' ? product : productDefaultValues,
   });
 
-  const onSubmit:SubmitHandler<z.infer<typeof insertProductSchema>> = async (values) => {
+  const submitForm:SubmitHandler<z.infer<typeof insertProductSchema>> = async (values) => {
     // on create
     if (type === "Create") {
       const res = await createProduct(values);
@@ -74,7 +74,7 @@ const ProductForm = ({
 
   return (
     <Form {...form}>
-      <form method="POST" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form method="POST" onSubmit={form.handleSubmit(submitForm)} className="space-y-8">
         <div className="flex flex-col gap-5 md:flex-row">
           {/* Name */}
           <FormField
