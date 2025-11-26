@@ -10,7 +10,7 @@ const AdminSearch = () => {
   const formActionUrl = pathname.includes("/admin/orders")
     ? "/admin/orders"
     : pathname.includes("/admin/users")
-    ? "admin/users"
+    ? "/admin/users"
     : "/admin/products";
 
     const searchParams = useSearchParams();
