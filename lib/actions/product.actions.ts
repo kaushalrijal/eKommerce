@@ -41,7 +41,7 @@ export async function getAllProducts({
   category,
   price,
   rating,
-  sort
+  sort,
 }: {
   query: string;
   limit?: number;
@@ -61,8 +61,26 @@ export async function getAllProducts({
           } as Prisma.StringFilter,
         }
       : {};
+
+      // category filter
+    const categoryFilter = category && category !== "all" ? { category } : {}
+
+    // price filter
+    const priceFilter: Prisma.ProductWhereInput = price && price !== "all" ? {
+      price: {
+        gte: Number(price?.split("-")[0]),
+        lte: Number(price?.split("-")[1]),
+      }
+    } : {}
+
+    // rating filter
+    const ratingFilter: Prisma.ProductWhereInput = rating && rating !== "all" ? {
+      rating: {
+        gte: Number(rating)
+      }
+    } : {}
   const data = await prisma.product.findMany({
-    where: { ...queryFilter },
+    where: { ...queryFilter, ...categoryFilter, ...priceFilter, ...ratingFilter },
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * limit,
     take: limit,
@@ -167,7 +185,7 @@ export async function getFeaturedProducts() {
   const data = await prisma.product.findMany({
     where: { isFeatured: true },
     orderBy: { createdAt: "desc" },
-    take: 4
+    take: 4,
   });
 
   return convertToPlainObject(data);

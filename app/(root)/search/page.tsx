@@ -25,6 +25,11 @@ const SearchPage = async (props: {
     page = "1",
   } = await props.searchParams;
 
+  // construct filter urls
+  const getFilterUrl = () => {
+    
+  }
+
   const products = await getAllProducts({
     query: q,
     category,
