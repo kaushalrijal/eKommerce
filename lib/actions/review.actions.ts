@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import z from "zod";
 import { insertReviewSchema } from "../validators";
@@ -8,76 +8,115 @@ import { prisma } from "@/db/prisma";
 import { revalidatePath } from "next/cache";
 
 // create & update reviews
-export async function createUpdateReview(data: z.infer<typeof insertReviewSchema>){
-    try {
-        const session = await auth();
-        if(!session) throw new Error("User not authenticated!");
+export async function createUpdateReview(
+  data: z.infer<typeof insertReviewSchema>
+) {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("User not authenticated!");
 
-        // Validate and store the review
-        const review = insertReviewSchema.parse({...data, userId: session?.user?.id});
+    // Validate and store the review
+    const review = insertReviewSchema.parse({
+      ...data,
+      userId: session?.user?.id,
+    });
 
-        // get the product that is being reviewed
-        const product = await prisma.product.findFirst({
-            where: { id: review.productId }
+    // get the product that is being reviewed
+    const product = await prisma.product.findFirst({
+      where: { id: review.productId },
+    });
+
+    if (!product) throw new Error("Product not found!");
+
+    // check if user already reviewed
+    const reviewExists = await prisma.review.findFirst({
+      where: { productId: review.productId, userId: review.userId },
+    });
+
+    await prisma.$transaction(async (tx) => {
+      if (reviewExists) {
+        // update the review
+        await tx.review.update({
+          where: { id: reviewExists.id },
+          data: {
+            title: review.title,
+            description: review.description,
+            rating: review.rating,
+          },
         });
+      } else {
+        // create the review
+        await tx.review.create({
+          data: review,
+        });
+      }
 
-        if(!product) throw new Error("Product not found!");
+      // get the average rating
+      const averageRating = await tx.review.aggregate({
+        _avg: {
+          rating: true,
+        },
+        where: { productId: review.productId },
+      });
 
-        // check if user already reviewed
-        const reviewExists = await prisma.review.findFirst({
-            where: {productId: review.productId, userId: review.userId}
-        })
+      // get the number of reviews
+      const numReviews = await tx.review.count({
+        where: { productId: review.productId },
+      });
 
-        await prisma.$transaction(async (tx) => {
-            if(reviewExists) {
-                // update the review
-                await tx.review.update({
-                    where: {id: reviewExists.id},
-                    data: {
-                        title: review.title,
-                        description: review.description,
-                        rating: review.rating
-                    }
-                })
-            } else {
-                // create the review
-                await tx.review.create({
-                    data: review
-                })
-            }
+      // update the rating and numReviews in product table
+      await tx.product.update({
+        where: { id: review.productId },
+        data: {
+          rating: averageRating._avg.rating || 0,
+          numReviews,
+        },
+      });
+    });
 
-            // get the average rating
-            const averageRating = await tx.review.aggregate({
-                _avg: {
-                    rating: true
-                },
-                where: {productId: review.productId}
-            });
+    revalidatePath(`/product/${product.slug}`);
+    return {
+      success: true,
+      message: "Reviewed Succesfully!",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
 
-            // get the number of reviews
-            const numReviews = await tx.review.count({
-                where: { productId: review.productId }
-            });
+// get all reviews for a product
+export async function getReviews({ productId }: { productId: string }) {
+  const data = await prisma.review.findMany({
+    where: {
+      productId: productId,
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-            // update the rating and numReviews in product table
-            await tx.product.update({
-                where: { id: review.productId },
-                data: {
-                    rating: averageRating._avg.rating || 0,
-                    numReviews
-                }
-            })
-        })
+  return { data };
+}
 
-        revalidatePath(`/product/${product.slug}`);
-        return {
-            success: true,
-            message: "Reviewed Succesfully!"
+// get a review written by the current user
+export async function getReviewByProductId( { productId }: { productId: string } ) {
+    const session = await auth();
+    if(!session) throw new Error("User is not authenticated");
+
+    return await prisma.review.findFirst({
+        where: {
+            productId,
+            userId: session?.user?.id,
         }
-    } catch (error) {
-        return {
-            success: false,
-            message: formatError(error)
-        }
-    }
+    })
 }
